@@ -1,4 +1,3 @@
 {
-  "URL_CODEFORCES_PROBLEMS": "http://codeforces.com/api/problemset.problems",
-  "URL_CODEFORCES_USER_STATUS": "http://codeforces.com/api/user.status"
+  "CODEFORCES_API_URL": "http://codeforces.com/api"
 }
