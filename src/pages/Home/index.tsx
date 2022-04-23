@@ -1,18 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import {
-  Button,
-  Divider,
-  Input,
-  TableContainer,
-  TableHead,
-  Table as MaterialTable,
-  TableRow,
-  TableCell,
-  TableBody,
-} from '@mui/material';
+import { Button, Divider, Input } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
+
 import Table from '../../components/Table';
-import TableQuestions from '../../components/TableQuestions';
+import TableProblems from '../../components/TableProblems';
 
 import {
   Container,
@@ -25,8 +17,9 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
+import SendIcon from '@mui/icons-material/Send';
 
-import { generateQuestions, isNumeric, shuffleArray } from '../../utils';
+import { generateProblems, isNumeric, shuffleArray } from '../../utils';
 
 type LocalStorageData = {
   handles: string[];
@@ -34,7 +27,7 @@ type LocalStorageData = {
   darkMode: boolean;
 };
 
-type Question = {
+type Problem = {
   name: string;
   rating: number;
   url: string;
@@ -50,20 +43,21 @@ const ratingTableColumns = [
   { id: 'rating-delete', label: '', align: 'right' },
 ];
 
-const questionTableColumns = [
-  { id: 'question', label: 'Question', align: 'left' },
+const problemTableColumns = [
+  { id: 'problem', label: 'Problem', align: 'left' },
   { id: 'rating', label: 'Rating', align: 'right' },
 ];
 
 const Home = () => {
   const [handles, setHandles] = useState<string[]>([]);
   const [ratings, setRatings] = useState<string[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [problems, setProblems] = useState<Problem[]>([]);
 
   // input values
   const [handle, setHandle] = useState<string>('');
   const [rating, setRating] = useState<string>('');
   const [showRatings, setShowRatings] = useState<boolean>(false);
+  const [loadingProblems, setLoadingProblems] = useState<boolean>(false);
 
   // handles
   const handleChangeHandle = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,19 +114,30 @@ const Home = () => {
     setRating('');
   };
 
-  const handleGenerateQuestions = () => {
+  const handleGenerateProblems = () => {
     setShowRatings(false);
-    setQuestions(generateQuestions(handles, ratings));
+    setLoadingProblems(true);
+
+    generateProblems(handles, ratings)
+      .then((generatedProblems) => {
+        setProblems(generatedProblems);
+        setLoadingProblems(false);
+
+        console.log(generatedProblems);
+      })
+      .catch((error: any) => {
+        console.log('Ocorreu um erro!');
+        console.error(error);
+
+        setLoadingProblems(false);
+      });
   };
 
-  const handleShuffleQuestions = () => {
-    setQuestions(state => shuffleArray(state).filter((question) => question.name !== ''));
-  }
-
-  // TODO: validar se handle existe na tabela em si... (com check do lado, loading, etc... tem problema ficar batendo na API?)
-  // TODO: se ja existe na tabela, ficar vermelho ou não permitir atualizar ou só tremer msm
-  // TODO: cores nas handles, não salvar isso no JSON (nunca vai te muitas handles pra bater na API)
-  // TODO: botao de copiar...?
+  const handleShuffleProblems = () => {
+    setProblems((state) =>
+      shuffleArray(state).filter((problem) => problem.name !== ''),
+    );
+  };
 
   // localStorage
   const getLocalStorageData = () => {
@@ -232,11 +237,11 @@ const Home = () => {
       </ContainerInputs>
 
       <Content>
-        <Title>Questions ({questions.length})</Title>
+        <Title>Problems ({problems.length})</Title>
 
-        <TableQuestions
-          columns={questionTableColumns}
-          questions={questions}
+        <TableProblems
+          columns={problemTableColumns}
+          problems={problems}
           showRatings={showRatings}
         />
 
@@ -252,7 +257,7 @@ const Home = () => {
             <Button
               startIcon={<VisibilityIcon />}
               variant="contained"
-              disabled={questions.length === 0}
+              disabled={problems.length === 0}
               onClick={() => setShowRatings(false)}
               sx={{ width: '170px' }}
             >
@@ -262,7 +267,7 @@ const Home = () => {
             <Button
               startIcon={<VisibilityOffIcon />}
               variant="contained"
-              disabled={questions.length === 0}
+              disabled={problems.length === 0}
               onClick={() => setShowRatings(true)}
               sx={{ width: '170px' }}
             >
@@ -273,19 +278,22 @@ const Home = () => {
           <Button
             startIcon={<ShuffleIcon />}
             variant="contained"
-            disabled={questions.length === 0}
-            onClick={() => handleShuffleQuestions()}
+            disabled={problems.length === 0}
+            onClick={() => handleShuffleProblems()}
           >
             Shuffle
           </Button>
 
-          <Button
+          <LoadingButton
             variant="contained"
             disabled={ratings.length === 0}
-            onClick={() => handleGenerateQuestions()}
+            onClick={() => handleGenerateProblems()}
+            loading={loadingProblems}
+            loadingPosition="end"
+            endIcon={<SendIcon />}
           >
             Generate
-          </Button>
+          </LoadingButton>
         </div>
       </Content>
     </Container>
