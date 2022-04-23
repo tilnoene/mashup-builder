@@ -9,21 +9,21 @@ import {
 } from '@mui/material';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import LinkIcon from '@mui/icons-material/Link';
 
-// TODO: tipagem global
-type Question = {
+type Problem = {
   name: string;
   rating: number;
   url: string;
 };
 
-const TableQuestions = ({
+const TableProblems = ({
   columns,
-  questions,
+  problems,
   showRatings,
 }: {
   columns: any;
-  questions: Question[];
+  problems: Problem[];
   showRatings: boolean;
 }) => {
   return (
@@ -40,27 +40,28 @@ const TableQuestions = ({
         </TableHead>
 
         <TableBody>
-          {questions.map((row, index: number) => (
+          {problems.map((row, index: number) => (
             <TableRow hover role="checkbox" tabIndex={-1} key={index}>
               <TableCell align="left">
                 <ContentCopyIcon
-                  sx={{ fontSize: 20, marginBottom: '-5px', cursor: 'pointer' }}
-                  fontSize="small"
+                  sx={{ fontSize: 20, marginBottom: '-5px', cursor: 'pointer', marginRight: '6px' }}
                   onClick={() => navigator.clipboard.writeText(row.name)}
                 />
-                <a
-                  style={{
-                    textDecoration: 'none',
-                    color: 'black',
-                    paddingLeft: '10px',
-                  }}
+
+                <a 
                   href={row.url}
                   target="_blank"
                   rel="noreferrer"
+                  style={{ textDecoration: 'none', marginBottom: '-5px', color: 'black' }}
                 >
-                  {row.name}
+                  <LinkIcon 
+                    sx={{ fontSize: 20, marginBottom: '-5px', cursor: 'pointer', marginRight: '6px' }}
+                  />
                 </a>
+
+                {row.name}
               </TableCell>
+
               <TableCell align="right" sx={{ display: 'flex' }}>
                 {showRatings ? (
                   row.rating
@@ -76,4 +77,4 @@ const TableQuestions = ({
   );
 };
 
-export default TableQuestions;
+export default TableProblems;
