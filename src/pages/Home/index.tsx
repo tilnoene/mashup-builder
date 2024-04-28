@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { Button, Divider, Input } from '@mui/material';
+import { Button, Divider, Input, FormGroup, FormControlLabel } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import Table from '../../components/Table';
 import TableProblems from '../../components/TableProblems';
+import Checkbox from '../../components/Checkbox';
 
 import {
   Container,
@@ -24,6 +25,10 @@ import { generateProblems, isNumeric, shuffleArray } from '../../utils';
 type LocalStorageData = {
   handles: string[];
   ratings: string[];
+  div1: boolean;
+  div2: boolean;
+  div3: boolean;
+  div4: boolean;
   darkMode: boolean;
 };
 
@@ -58,6 +63,10 @@ const Home = () => {
   const [rating, setRating] = useState<string>('');
   const [showRatings, setShowRatings] = useState<boolean>(false);
   const [loadingProblems, setLoadingProblems] = useState<boolean>(false);
+  const [checkboxDiv1, setCheckboxDiv1] = useState<boolean>(true);
+  const [checkboxDiv2, setCheckboxDiv2] = useState<boolean>(true);
+  const [checkboxDiv3, setCheckboxDiv3] = useState<boolean>(true);
+  const [checkboxDiv4, setCheckboxDiv4] = useState<boolean>(true);
 
   // handles
   const handleChangeHandle = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +78,7 @@ const Home = () => {
       (currentHandle, currentIndex) => currentIndex !== index,
     );
 
-    setLocalStorageData(newHandles, ratings, false);
+    setLocalStorageData(newHandles, ratings, checkboxDiv1, checkboxDiv2, checkboxDiv3, checkboxDiv4, false);
     setHandles(newHandles);
   };
 
@@ -82,7 +91,7 @@ const Home = () => {
     } else {
       const newHandles = [handle, ...handles];
 
-      setLocalStorageData(newHandles, ratings, false);
+      setLocalStorageData(newHandles, ratings, checkboxDiv1, checkboxDiv2, checkboxDiv3, checkboxDiv4, false);
       setHandles(newHandles);
     }
 
@@ -99,7 +108,7 @@ const Home = () => {
       (currentRating, currentIndex) => currentIndex !== index,
     );
 
-    setLocalStorageData(handles, newRatings, false);
+    setLocalStorageData(handles, newRatings, checkboxDiv1, checkboxDiv2, checkboxDiv3, checkboxDiv4, false);
     setRatings(newRatings);
   };
 
@@ -108,17 +117,37 @@ const Home = () => {
 
     const newRatings = [rating, ...ratings];
 
-    setLocalStorageData(handles, newRatings, false);
+    setLocalStorageData(handles, newRatings, checkboxDiv1, checkboxDiv2, checkboxDiv3, checkboxDiv4, false);
     setRatings(newRatings);
 
     setRating('');
+  };
+
+  const handleChangeCheckboxDiv1 = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCheckboxDiv1(event.target.checked);
+    setLocalStorageData(handles, ratings, event.target.checked, checkboxDiv2, checkboxDiv3, checkboxDiv4, false);
+  };
+
+  const handleChangeCheckboxDiv2 = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCheckboxDiv2(event.target.checked);
+    setLocalStorageData(handles, ratings, checkboxDiv1, event.target.checked, checkboxDiv3, checkboxDiv4, false);
+  };
+
+  const handleChangeCheckboxDiv3 = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCheckboxDiv3(event.target.checked);
+    setLocalStorageData(handles, ratings, checkboxDiv1, checkboxDiv2, event.target.checked, checkboxDiv4, false);
+  };
+
+  const handleChangeCheckboxDiv4 = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCheckboxDiv4(event.target.checked);
+    setLocalStorageData(handles, ratings, checkboxDiv1, checkboxDiv2, checkboxDiv3, event.target.checked, false);
   };
 
   const handleGenerateProblems = () => {
     setShowRatings(false);
     setLoadingProblems(true);
 
-    generateProblems(handles, ratings)
+    generateProblems(handles, ratings, checkboxDiv1, checkboxDiv2, checkboxDiv3, checkboxDiv4)
       .then((generatedProblems) => {
         setProblems(generatedProblems);
         setLoadingProblems(false);
@@ -148,12 +177,20 @@ const Home = () => {
 
       setHandles(localStorageConfig.handles);
       setRatings(localStorageConfig.ratings);
+      setCheckboxDiv1(localStorageConfig.div1);
+      setCheckboxDiv2(localStorageConfig.div2);
+      setCheckboxDiv3(localStorageConfig.div3);
+      setCheckboxDiv4(localStorageConfig.div4);
     }
   };
 
   const setLocalStorageData = (
     handles: string[],
     ratings: string[],
+    div1: boolean,
+    div2: boolean,
+    div3: boolean,
+    div4: boolean,
     darkMode: boolean,
   ) => {
     localStorage.setItem(
@@ -161,6 +198,10 @@ const Home = () => {
       JSON.stringify({
         handles,
         ratings,
+        div1,
+        div2,
+        div3,
+        div4,
         darkMode,
       }),
     );
@@ -232,6 +273,17 @@ const Home = () => {
               rows={ratings}
               handleDelete={handleDeleteRating}
             />
+          </div>
+        </Content>
+
+        <Content>
+          <Title>Settings</Title>
+
+          <div>
+            <Checkbox checked={checkboxDiv1} onChange={handleChangeCheckboxDiv1} label="Div. 1" />
+            <Checkbox checked={checkboxDiv2} onChange={handleChangeCheckboxDiv2} label="Div. 2" />
+            <Checkbox checked={checkboxDiv3} onChange={handleChangeCheckboxDiv3} label="Div. 3" />
+            <Checkbox checked={checkboxDiv4} onChange={handleChangeCheckboxDiv4} label="Div. 4" />
           </div>
         </Content>
       </ContainerInputs>

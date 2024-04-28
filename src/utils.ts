@@ -4,8 +4,8 @@ export const isNumeric = (number: string): boolean => {
   return /^-?\d+$/.test(number);
 };
 
+// https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
 export const shuffleArray = (array: any[]): any[] => {
-  // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
   for (var i = array.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
     var temp = array[i];
@@ -54,11 +54,46 @@ const getAcceptedProblemsByHandle = async (handle: string) => {
   }
 };
 
+const getAllContests = async () => {
+  try {
+    const response = await api.get('/contest.list?gym=false');
+
+    if (response.data.status === 'FAILED') {
+      throw new Error('An error has occurred');
+    } else {
+      return response.data.result;
+    }
+  } catch {
+    throw new Error('Codeforces API is currently unavailable');
+  }
+}
+
 export const generateProblems = async (
   handles: string[],
   ratings: string[],
+  div1: boolean,
+  div2: boolean,
+  div3: boolean,
+  div4: boolean,
 ) => {
   let allProblems = await getAllProblems();
+  let allContests = await getAllContests();
+
+  let contestInfo: { [id: number]: boolean } = {};
+
+  allContests.forEach((contest: any) => {
+    if (
+        (div4 && contest.name.includes("Div. 4")) ||
+        (div3 && contest.name.includes("Div. 3")) ||
+        (div2 && !div1 && contest.name.includes("Div. 2") && !contest.name.includes("Div. 1")) ||
+        (!div2 && div1 && !contest.name.includes("Div. 2") && contest.name.includes("Div. 1")) ||
+        (div2 && div1 && (contest.name.includes("Div. 2") || contest.name.includes("Div. 1")))
+    ) {
+      contestInfo[contest.id] = true;
+    }
+  });
+
+  allProblems = allProblems.filter((problem: any) => contestInfo[problem.contestId] === true);
 
   await Promise.all(
     handles.map(async (handle) => {

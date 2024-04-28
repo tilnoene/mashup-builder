@@ -22,6 +22,7 @@ export const Content = styled(Paper)`
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 14px;
 `;
 
 export const Title = styled.h2`
